@@ -11,7 +11,7 @@
 
 <meta name="author" content="thought and written by Giacomo Maugeri" />
 
-<meta name="date" content="2019-05-13" />
+<meta name="date" content="2019-05-29" />
 
 <title>Relational Models for Data</title>
 
@@ -225,7 +225,7 @@ div.tocify {
 <h1 class="title toc-ignore">Relational Models for Data</h1>
 <h3 class="subtitle"><em>A Language-Agnostic User Guide to Relational Logic</em></h3>
 <h4 class="author"><em>thought and written by Giacomo Maugeri</em></h4>
-<h4 class="date"><em>2019-05-13</em></h4>
+<h4 class="date"><em>2019-05-29</em></h4>
 
 </div>
 
@@ -248,7 +248,7 @@ h6 { /* Header 6 */
 <blockquote>
 <p>Note: This version only works on Mozilla Firefox and Google Chrome,</p>
 </blockquote>
-<p>In this short guide we aim at giving actuaries the fundamentals of working with tabular data, showing practical examples within insurance datasets. Even if this guide is based conceptually on SQL, it is available in R and Python, too. R and Python <em>code chuncks</em> are interactive and can be run directly in your browser. This is unfortunately not possible for SQL, for which you can experiment <a href="https://sqliteonline.com/">this website</a> or your IDE. Unless you are comfortable with R or Python, I would strongly suggest to use SQL, which syntax is closer to English. However Python and R offer much more in terms of functionality, but their learning curve is significantly steeper.</p>
+<p>In this short guide we aim at giving actuaries the fundamentals of working with tabular data, showing practical examples within insurance datasets. Even if this guide is based conceptually on SQL, it is available in R and Python, too. R and Python <em>code chuncks</em> are interactive and can be run directly in your browser. This is unfortunately not possible for SQL, for which you can experiment <a href="https://sqliteonline.com/">this website</a> or your IDE. When referring to SQL we are going to refer to <a href="https://blog.ansi.org/2018/10/sql-standard-iso-iec-9075-2016-ansi-x3-135/">ANSI SQL</a>, unless differently specified. Unless you are comfortable with R or Python, I would strongly suggest to use SQL, which syntax is closer to English. However Python and R offer much more in terms of functionality, but their learning curve is significantly steeper.</p>
 <p>Each of the following sections will feature a tab-driven menu which would allow you to choose your favourite Language. Additionaly, if the language has more than one <em>package/library</em> which is able to perform the required task a sub-menu with the a selection of <em>dialects</em> is provided.</p>
 <div id="the-etl-extract-transform-load-framework" class="section level3">
 <h3>The ETL (Extract Transform Load) Framework</h3>
@@ -355,7 +355,7 @@ eyJsYW5ndWFnZSI6InIiLCJwcmVfZXhlcmNpc2VfY29kZSI6ImxpYnJhcnkoUk15U1FMKTsgbGlicmFy
 <h3>From file</h3>
 <div id="sql-1" class="section level4">
 <h4>SQL</h4>
-<p>When it comes to inputing data ANSI SQL is severly limited. Indeed using ANSI SQL syntax the only possible way of adding values to a table is to the <code>INSERT INTO</code>. For obvious reason this approach is not practicable in most situations. However some automatic translator, like <a href="http://www.convertcsv.com/csv-to-sql.htm">this one</a> from csv to SQL are available online.</p>
+<p>When it comes to inputing data SQL is severly limited. Indeed using ANSI SQL syntax the only possible way of adding values to a table is to resort to the <code>INSERT INTO</code> statement. For obvious reason this approach is not practicable in most situations. However some automatic translator, like <a href="http://www.convertcsv.com/csv-to-sql.htm">this one</a> from csv to SQL are available online.</p>
 <pre class="sql"><code>INSERT INTO table_name (column1, column2, column3, ...)
 VALUES (value1, value2, value3, ...); </code></pre>
 <p>The reader is hence advised to refer to the documentation of its SQL IDE which will proabably have some guided procedures to do so. <a href="https://sqliteonline.com/">The online IDE we have advised to use in this tutorial</a> has an utility to import CSV and JSON.</p>

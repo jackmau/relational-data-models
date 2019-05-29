@@ -43,7 +43,7 @@ https://catalog.data.gov/dataset?res_format=CSV&tags=insurance
 
 > Note: This version only works on Mozilla Firefox and Google Chrome, 
 
-In this short guide we aim at giving actuaries the fundamentals of working with tabular data, showing practical examples within insurance datasets. Even if this guide is based conceptually on SQL, it is available in R and Python, too. R and Python *code chuncks* are interactive and can be run directly in your browser. This is unfortunately not possible for SQL, for which you can experiment [this website](https://sqliteonline.com/) or your IDE.
+In this short guide we aim at giving actuaries the fundamentals of working with tabular data, showing practical examples within insurance datasets. Even if this guide is based conceptually on SQL, it is available in R and Python, too. R and Python *code chuncks* are interactive and can be run directly in your browser. This is unfortunately not possible for SQL, for which you can experiment [this website](https://sqliteonline.com/) or your IDE. When referring to SQL we are going to refer to [ANSI SQL](https://blog.ansi.org/2018/10/sql-standard-iso-iec-9075-2016-ansi-x3-135/), unless differently specified.
 Unless you are comfortable with R or Python, I would strongly suggest to use SQL, which syntax is closer to English. However Python and R offer much more in terms of functionality, but their learning curve is significantly steeper.
 
 Each of the following sections will feature a tab-driven menu which would allow you to choose your favourite Language. Additionaly, if the language has more than one *package/library* which is able to perform the required task a sub-menu with the a selection of *dialects* is provided. 
@@ -194,7 +194,7 @@ but I am optimistic it can be done
 
 #### SQL
 
-When it comes to inputing data ANSI SQL is severly limited. Indeed using ANSI SQL syntax the only possible way of adding values to a table is to the `INSERT INTO`. For obvious reason this approach is not practicable in most situations. However some automatic translator, like [this one](http://www.convertcsv.com/csv-to-sql.htm) from csv to SQL are available online.
+When it comes to inputing data SQL is severly limited. Indeed using ANSI SQL syntax the only possible way of adding values to a table is to resort to the `INSERT INTO` statement. For obvious reason this approach is not practicable in most situations. However some automatic translator, like [this one](http://www.convertcsv.com/csv-to-sql.htm) from csv to SQL are available online.
 
 ```{sql inser into, tut=FALSE,eval=FALSE}
 INSERT INTO table_name (column1, column2, column3, ...)
