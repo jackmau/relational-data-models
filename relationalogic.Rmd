@@ -1,0 +1,609 @@
+---
+title: "Relational Models for Data"
+author: "thought and written by Giacomo Maugeri"
+subtitle: A Language-Agnostic User Guide to Relational Logic
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float:
+      toc_collapsed: true
+    toc_depth: 3
+  html_notebook:
+    self_contained: false
+    toc: yes
+  toc_float: yes
+  params:
+  date: !r Sys.Date()
+---
+
+<style type="text/css">
+
+
+h5 { /* Header 5 */
+  font-size: 24px;
+}
+h6 { /* Header 6 */
+  font-size: 16px;
+}
+
+</style>
+
+```{r setup, include = FALSE}
+library(reticulate)
+library(tutorial)
+use_python('C:/ProgramData/Anaconda3')
+tutorial::go_interactive()
+```
+
+https://catalog.data.gov/dataset?res_format=CSV&tags=insurance
+
+## Introduction
+
+> Note: This version only works on Mozilla Firefox and Google Chrome, 
+
+In this short guide we aim at giving actuaries the fundamentals of working with tabular data, showing practical examples within insurance datasets. Even if this guide is based conceptually on SQL, it is available in R and Python, too. R and Python *code chuncks* are interactive and can be run directly in your browser. This is unfortunately not possible for SQL, for which you can experiment [this website](https://sqliteonline.com/) or your IDE.
+Unless you are comfortable with R or Python, I would strongly suggest to use SQL, which syntax is closer to English. However Python and R offer much more in terms of functionality, but their learning curve is significantly steeper.
+
+Each of the following sections will feature a tab-driven menu which would allow you to choose your favourite Language. Additionaly, if the language has more than one *package/library* which is able to perform the required task a sub-menu with the a selection of *dialects* is provided. 
+
+### The ETL (Extract Transform Load) Framework
+
+This document will guide you through the main steps of so called ETL (Extract Transform Load) applications. Indeed a tipical daily life task from an actuary would include:
+
+* *Data Extraction*, in the form of
+    - Connection to a database;
+    - Importing/Exporting data from a variety of tabular file formats;
+    - Importing live data from other software/web (API approach)
+* *Data Transformation*, including
+    - Subsetting observation or variables;
+    - Ordering data by variables;
+    - Summarising data, creating new summary variables or modifying existing ones;
+    - Combining variables from different datasources;
+    - Transposing tables or subsets of tables;
+    - Perform calculations which depend on the row number.
+* *Modeling*,
+* *Data Export*, i.e.
+    - Writing Data to csv;
+    - Uploading data to a server.
+
+This document is structured to replicate the aforementioned points, with the exclusion of modeling.
+
+### Short History or Relational Logic and Databases
+
+Development of SQL language and of different database solutions and their use in other programming language.
+Bits of introduction in terms of server structure (server, database, schema)
+
+
+### What is a SQL Table?
+
+Explanation of the main characteristics of a SQL table, aka data.frames in R/Python, starting from a matrix and pointing out the differences
+
+## Data Extraction
+
+### From server {.tabset .tabset-fade}
+
+In order to extract data from a server we first need to connect to it. In this section we will provide the means to do so. Please note that the SQL section here is not detailed as almost completely dependent on the server/IDE vendor.
+
+
+#### SQL
+
+##### **Setting up connection to the Database**
+
+Connection to databases varies significantly from one database vendor to the other. However most database adminstrator tools/ IDE, such as [Microsoft SQL Server Management](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017), [MySQL Workbench](https://www.mysql.com/products/workbench/), [Oracle SQL Developer](https://www.oracle.com/database/technologies/appdev/sql-developer.html), [DataGrip](https://www.jetbrains.com/datagrip), [SQL Database Studio](https://sqldatabasestudio.com/), [Razor SQL](https://razorsql.com/) usually have guided procedures for setting up a connection. The reader is advise to check that its IDE supports the database of the vendor.
+
+On Windows, it is likely that a DSN (Data Source Name) will have to be set up using microsoft [obdc data source administrator](https://docs.microsoft.com/en-us/sql/odbc/admin/odbc-data-source-administrator?view=sql-server-2017).
+
+##### **Importing data**
+
+Once you have established connection to the server it should be possible to retrieve the tables in the database using standard SQL syntax, as described in [this ection](#SQL)
+
+```{sql, tut = FALSE, eval = FALSE}
+SELECT * FROM database.schema.table
+```
+
+In order to get information on the table contained in your database refer to the SQL syntax of your database vendor, as this functionality is not available in ANSI SQL.
+
+#### R
+
+##### **Setting up connection to the Database** {.tabset .tabset-fade .tabset-pills}
+
+Connection to databases varies significantly from one database vendor to the other. For a full panoramic of packages and databases see [here](https://db.rstudio.com/databases/).
+
+The present state of database support in R is a complex discussion. Indeed R features two main families of packages to connect to databases: those based on the *DBI* (DataBase Interface), developed by the *R Special Interest Group on Databases*, and those based on the more common *ODBC* (Open DataBase Connectivity). The *DBI* paradigm, implemented in its omonynmous package `DBI` acts as a set of function to interact with a database and requires a database driver from another R package. This has the advantage to mantain a consistent syntax, notwithstanding the database vendor's one, and to avoid the user the complication of setting up driver for the database or a DSN, but the fundamental drawback of supporting only a limited amount of database solution which have a specific DBI-compliant driver (currently [Google BigQuery](https://db.rstudio.com/databases/big-query/), [MonetDB](https://db.rstudio.com/databases/monetdb/), [MySQL/MariaDB](https://db.rstudio.com/databases/my-sql/), [Oracle](https://db.rstudio.com/databases/oracle/), [PostgreSQL](https://code.google.com/archive/p/rpostgresql/), [SQL Server](https://www.r-project.org/nosvn/pandoc/RSQLServer.html) and [SQLite](https://db.rstudio.com/databases/sqlite/)).
+
+However most commercial vendor provide their own *ODBC* driver, which need to be separately installed. In order to use those R guru [Brian Ripley](https://en.wikipedia.org/wiki/Brian_D._Ripley) has developed package `RODBC`, which supports less products than DBI-based package but has an [extensive and well written documentation](https://cran.r-project.org/web/packages/RODBC/vignettes/RODBC.pdf), but is not DBI-compliant. Its syntax sounds more natural to me than `DBI`, however it is not actively in development and it has not been updated since May 2017. It also lack support for date formats, which are supported by `DBI`.
+
+To make things even more confusing, there are now packages which offer an *ODBC* interface to *DBI*, like `RODBCDBI`, an `RODBC` wrapper with DBI support and the recent [Jim Hester's](https://github.com/jimhester) `odbc`. Since The combination of `DBI` and `odbc` should cover the need of most users, we would limit our examples to `DBI` syntax. However `odbc` is a recent package under active development, hence its syntax may change in the future and new features may be introduced.  If you have never connected to an external database and your IDE is RStudio I strongly suggest you to go for DBI-based packages or `odbc`. In case you encounter any issue, and your database supports *ODBC* drivers you may want to try `RODBC` or `RODBCDBI`. 
+
+If we are using *ODBC* drivers, using either `RODBC` or `odbc`, there are two main ways of setting up a database connection:
+
+1. setting up a DSN using windows [obdc data source administrator](https://docs.microsoft.com/en-us/sql/odbc/admin/odbc-data-source-administrator?view=sql-server-2017)
+2. passing a *connection-string* directly to the server Driver, Server and Database in your program.
+
+The latter approach is preferable, as it allows your code to be executed on other machines, however the first one is simpler to set-up. In case you want to follow the second approach [here is a useful resource of example connection strings for a variety of databases](https://www.connectionstrings.com). Both approaches have the fundamental drawback of forcing the user to specify their password to access the server. In order not to do so, when sharing your code with other people, it is good practice to include an explicit input from the user using R Base function `readline()`. 
+
+Database connection using the `DBI` is realised using function `dbConnect()`. This function supports both DSN (if `odbc` or an ODBC complaint package is used) and manual input. As outlined previously, it is good practice not to hardcode password and force users to input their password at the beginning of the function. In the previous program, both functions return an object which is stored into a variable for further use in data extraction.
+
+Once we have established connection `DBI` offers a suite of functions of support, which require an object of the `connection` class as their main argument. We cite only the most useful:
+-`dbGetInfo()` to get connections infos,
+-`dbDisconnect()` closes one or more open connections,
+-`dbListTables()`, number and details of the tables contained in the database we are connected to.
+
+> Note: Package `RMySQL` is now deprecated in favour of `RMariaDB`
+
+```{r ex="a", type="pre-exercise-code"}
+pword <- "datacamp"
+```
+
+```{r ex ="a", type="sample-code"}
+library(RMySQL)
+
+con <- dbConnect(RMySQL::MySQL(), 
+                 dbname = "tweater", 
+                 host = "courses.csrrinzqubik.us-east-1.rds.amazonaws.com", 
+                 port = 3306,
+                 user = "student",
+                 password = pword)
+
+dbGetInfo(con)
+dbListTables(con)
+dbDisconnect(con)
+```
+
+This naturally leads us into the next section: importing data.
+
+##### **Importing data**
+
+The main function for importing an entire SQL table into a data.frame is `dbReadTable()`. At minimum it requires a connection, namely a *connection* class object like the one we just created in the previous section and the name of table as a string. To select a table in specific schema you need to use the `Id()` function instead of the table name specifying `dbReadTable(connection, Id(schema,table))`. It is good practice to quote any strings we send to the server with `Id()` or `SQL()` anyway, to avoid incurring encoding issues.
+
+Before importing a table you may want to know which columns the table contains. This is possible using function `dbListFields()`, which has the same two required arguments of the previous `dbReadTable()`. If you have established you don't need all the columns from you have selected, or you want only certain observations you can import in R only part of the data by running a query using `sqlQuery()`. This function requires you to input a valid connection and SQL query. To know more about SQL syntax you are invited to read the section on [data manipulation with SQL](#SQL).
+
+```{r ex="b", type="pre-exercise-code"}
+library(RMySQL); library(DBI)
+
+con <- dbConnect(RMySQL::MySQL(), 
+                 dbname = "tweater", 
+                 host = "courses.csrrinzqubik.us-east-1.rds.amazonaws.com", 
+                 port = 3306,
+                 user = "student",
+                 password = "datacamp")
+```
+
+```{r ex ="b", type="sample-code"}
+mytable <- dbReadTable(con,SQL("tweats"))
+summary(mytable)
+
+dbListFields(con,SQL("tweats"))
+dbGetQuery(con,SQL("Select dates from tweats"))
+```
+
+
+#### Python
+
+##### **Setting up a DBI connection**
+I'll still have to figure how
+
+##### **Querying data**
+
+but I am optimistic it can be done 
+
+
+### From file {.tabset}
+
+#### SQL
+
+When it comes to inputing data ANSI SQL is severly limited. Indeed using ANSI SQL syntax the only possible way of adding values to a table is to the `INSERT INTO`. For obvious reason this approach is not practicable in most situations. However some automatic translator, like [this one](http://www.convertcsv.com/csv-to-sql.htm) from csv to SQL are available online.
+
+```{sql inser into, tut=FALSE,eval=FALSE}
+INSERT INTO table_name (column1, column2, column3, ...)
+VALUES (value1, value2, value3, ...); 
+```
+
+The reader is hence advised to refer to the documentation of its SQL IDE which will proabably have some guided procedures to do so. 
+[The online IDE we have advised to use in this tutorial](https://sqliteonline.com/) has an utility to import CSV and JSON.
+
+
+#### R
+
+The panorama of I/O packages in R is huge. A self-contained solution to a significant amount of formats is the recent package [`rio`](https://cran.r-project.org/web/packages/rio/vignettes/rio.html), which has a single `import()` function and does not require you to worry about which package is needed for opening a specified file type.
+
+However this approach is only advised for EDA (Exploratory Data Analysis) and not recommendable in production. In most cases you would want to know the exact function and package to load a certain type of file. Here is a full panoramic.
+
+##### **Excel** {.tabset .tabset-fade .tabset-pills}
+
+As the read will know well Microsoft Excel has 3 main formats: .xls, .xlsx and .xlsb. The latter has limited support in R, but can be accessed an modified with package `excel.link`. The first two are dealt by package `readxl` or `openxlsx`. 
+
+###### readxl
+
+###### openxlsx
+
+My personal preference is for `openxlsx`, which has more functionality
+
+```{r}
+
+```
+
+##### **Csv**
+`readcsv, readcsv2`
+```{r}
+
+```
+
+##### **Statistical Files**
+`foreign, haven`
+```{r}
+
+```
+
+#### Python
+Pandas related stuff
+
+##### **Excel**
+no idea yet
+```{python}
+2+2
+```
+
+##### **Csv**
+but it should be easy
+```{python}
+2+2
+```
+
+##### **Statistical Files**
+not sure it can be done, but I'll check
+
+```{python}
+2+2
+```
+
+
+## Data Transformation
+small introduction to each of the following category and what is meant by with excel examples:
+
+* subsetting
+* ordering
+* summarising
+* combining
+* transposing
+* row-indexed calculations
+
+### Subsetting Data {.tabset}
+
+#### SQL
+
+##### **Subsetting Variables (Columns)** {#SQL}
+
+select statement
+
+```{sql}
+
+```
+
+##### **Subsetting Observations (Rows)**
+
+where statement
+
+```{sql}
+
+```
+
+#### R
+
+##### **Using R Base **
+
+binary operator `[]` and `subset()`
+
+```{r}
+
+```
+
+##### **Using dplyr**
+
+I never use it but I will show as it nowadays more used than the above one
+
+#### Python
+
+##### **Using NumPy **
+
+http://pandas.pydata.org/pandas-docs/stable/indexing.html#query-python-versus-pandas-syntax-comparison
+
+##### **Using Pandas **
+
+Pandas functions, refer to http://pandas.pydata.org/pandas-docs/stable/overview.html
+
+```{python}
+2+2
+```
+
+
+
+### Ordering Data {.tabset}
+
+#### SQL
+
+order by statement
+
+```{sql}
+
+```
+
+
+#### R
+
+##### **Using R Base **
+
+binary operator `[]` and `subset()`
+
+```{r}
+
+```
+
+##### **Using dplyr**
+
+I never use it but I will show as it nowadays more used than the above one
+
+#### Python
+
+##### **Using NumPy **
+
+http://pandas.pydata.org/pandas-docs/stable/indexing.html#query-python-versus-pandas-syntax-comparison
+
+##### **Using Pandas **
+
+Pandas functions, refer to http://pandas.pydata.org/pandas-docs/stable/overview.html
+
+```{python}
+print(2+2)
+```
+
+
+
+### Summarising Data {.tabset}
+
+#### SQL
+
+group by statement
+
+```{sql}
+
+```
+
+
+#### R
+
+##### **Using R Base **
+
+aggregate
+
+```{r}
+
+```
+
+##### **Using dplyr**
+
+I never use it but I will show as it nowadays more used than the above one
+
+#### Python
+
+##### **Using NumPy **
+
+http://pandas.pydata.org/pandas-docs/stable/indexing.html#query-python-versus-pandas-syntax-comparison
+
+##### **Using Pandas **
+
+Pandas functions, refer to http://pandas.pydata.org/pandas-docs/stable/overview.html
+
+```{python}
+2+2
+```
+
+
+### Combining Data {.tabset}
+
+#### SQL
+
+join statement
+
+```{sql}
+
+```
+
+
+#### R
+
+##### **Using R Base **
+
+merge
+
+```{r}
+
+```
+
+##### **Using dplyr**
+
+I never use it but I will show as it nowadays more used than the above one
+
+#### Python
+
+##### **Using NumPy **
+
+http://pandas.pydata.org/pandas-docs/stable/indexing.html#query-python-versus-pandas-syntax-comparison
+
+##### **Using Pandas **
+
+Pandas functions, refer to http://pandas.pydata.org/pandas-docs/stable/overview.html
+
+```{python}
+2+2
+```
+
+
+### Transposing Data {.tabset}
+
+#### SQL
+
+not doable in ordinary sql syntax, reference to sql-specific solutions
+
+```{sql}
+
+```
+
+
+#### R
+
+##### **Using Tidyr **
+
+tidy
+
+```{r}
+
+```
+
+##### **Using dplyr**
+
+reshape
+
+I never use it but I will show as it nowadays more used than the above one
+
+#### Python
+
+##### **Using NumPy **
+
+http://pandas.pydata.org/pandas-docs/stable/indexing.html#query-python-versus-pandas-syntax-comparison
+
+##### **Using Pandas **
+
+Pandas functions, refer to http://pandas.pydata.org/pandas-docs/stable/overview.html
+
+```{python}
+2+2
+```
+
+
+### Row-Indexed Calculations {.tabset}
+
+#### SQL
+
+not doable in ordinary sql syntax, reference to sql-specific solutions
+
+```{sql}
+
+```
+
+
+#### R
+
+##### **Using Tidyr **
+
+tidy
+
+```{r}
+
+```
+
+##### **Using dplyr**
+
+reshape
+
+I never use it but I will show as it nowadays more used than the above one
+
+#### Python
+
+##### **Using NumPy **
+
+http://pandas.pydata.org/pandas-docs/stable/indexing.html#query-python-versus-pandas-syntax-comparison
+
+##### **Using Pandas **
+
+Pandas functions, refer to http://pandas.pydata.org/pandas-docs/stable/overview.html
+
+```{python}
+2+2
+```
+
+
+## Data Export
+
+### to File {.tabset}
+
+#### SQL
+
+explanation of the ineherent problem in importing file and a bit of the insert into, update terminology, showing http://www.convertcsv.com/csv-to-sql.htm
+
+```{sql}
+
+```
+
+#### R
+
+##### **Excel**
+`readxl, openxlsx`
+
+```{r}
+
+```
+
+##### **Csv**
+`readcsv, readcsv2`
+```{r}
+
+```
+
+##### **Statistical Files**
+`foreign, haven`
+```{r}
+
+```
+
+#### Python
+Pandas related stuff
+
+##### **Excel**
+no idea yet
+```{python}
+2+2
+```
+
+##### **Csv**
+but it should be easy
+```{python}
+2+2
+```
+
+##### **Statistical Files**
+not sure it can be done, but I'll check
+
+```{python}
+2+2
+```
+
+### to Server {.tabset}
+
+#### SQL
+
+
+create, update and drop table
+
+```{sql}
+
+```
+
+
+#### R
+
+DBI, obdc, RODBC
+
+It should be noted that it does not support natively schemas in 
+
+`RODBC::sqlFetch, DBI::readtable` 
+
+#### Python
+
+I'll still have to figure how
+
+but I am optimistic it can be done 
+
+## Efficiency and Scalability
